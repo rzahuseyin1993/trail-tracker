@@ -2,18 +2,7 @@
 
 class GeoSpatial
 {
-    public function pointsInLineBuffer($points, $line, $bufferSize, $units)
-    {
-        $results = array();
-        foreach ($points as $point) {
-            $dist = $this->pointToLineDistance($point, $line, $units);
-            if ($dist <= $bufferSize) {
-                $results[] = $point;
-            }
-        }
-        return $results;
-    }
-    private function pointToLineDistance($pt, $line, $units)
+    public function pointToLineDistance($pt, $line, $units)
     {
         for ($i = 0; $i < count($line) - 1; $i++) {
             $a = $line[$i];

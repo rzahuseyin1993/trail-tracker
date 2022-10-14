@@ -11,19 +11,45 @@ include_once "GeoSpatial.class.php";
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method == 'GET') {
-    $trailRows = csvToArray("data/trail_lines.csv");
-    $line = array();
-    foreach ($trailRows as $row) {
-        $line[] = array((float) $row[3], (float) $row[4]);
+    if (isset($_GET["type"]) && $_GET["type"] == 'trail') {
+        $trailRows = csvToArray("data/trail_lines.csv");
+        echo json_encode($trailRows);
+    } elseif (isset($_GET["type"]) && $_GET["type"] == 'tracker') {
+        $bufferSize = 50;
+        if (isset($_GET["buffer"])) {
+            $bufferSize = (float) $_GET['buffer'];
+        }
+        $trailRows = csvToArray("data/trail_lines.csv");
+        $line = array();
+        foreach ($trailRows as $row) {
+            $line[] = array((float) $row[3], (float) $row[4]);
+        }
+        $trackerRows = csvToArray("data/tracker_logs.csv");
+
+        $geospatial = new GeoSpatial();
+        if (isset($_GET["class"]) && $_GET["class"] == 'inside') {
+            $results = array();
+            foreach ($trackerRows as $row) {
+                $point = array((float) $row[7], (float) $row[6]);
+                $dist = $geospatial->pointToLineDistance($point, $line, "meters");
+                if ($dist <= $bufferSize) {
+                    $results[] = $row;
+                }
+            }
+            echo json_encode($results);
+        } elseif (isset($_GET["class"]) && $_GET["class"] == 'outside') {
+            $results = array();
+            foreach ($trackerRows as $row) {
+                $point = array((float) $row[7], (float) $row[6]);
+                $dist = $geospatial->pointToLineDistance($point, $line, "meters");
+                if ($dist > $bufferSize) {
+                    $results[] = $row;
+                }
+            }
+            echo json_encode($results);
+        }
     }
-    $trackerRows = csvToArray("data/tracker_logs.csv");
-    $points = array();
-    foreach ($trackerRows as $row) {
-        $points[] = array((float) $row[7], (float) $row[6]);
-    }
-    $geospatial = new GeoSpatial();
-    $results = $geospatial->pointsInLineBuffer($points, $line, 10, 'meters');
-    echo json_encode($results);
+
 }
 
 function csvToArray($csvFile)
