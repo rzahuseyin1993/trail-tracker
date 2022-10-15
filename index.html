@@ -44,35 +44,39 @@
       .then((results) => {
         const trail_points = {
           type: "FeatureCollection",
-          features: results.map((item) => {
-            return {
+          features: [],
+        };
+        for (let key in results) {
+          results[key].forEach((item) => {
+            trail_points.features.push({
               type: "Feature",
               geometry: {
                 type: "Point",
                 coordinates: [parseFloat(item[3]), parseFloat(item[4])],
               },
               properties: {},
-            };
-          }),
-        };
-        const trail_line = {
+            });
+          });
+        }
+        const trail_lines = {
           type: "FeatureCollection",
-          features: [
-            {
-              type: "Feature",
-              geometry: {
-                type: "LineString",
-                coordinates: results.map((item) => [
-                  parseFloat(item[3]),
-                  parseFloat(item[4]),
-                ]),
-              },
-              properties: {},
-            },
-          ],
+          features: [],
         };
-        const trail_buffer = turf.buffer(trail_line, 50, { units: "meters" });
-        const bbox = turf.bbox(trail_line);
+        for (let key in results) {
+          trail_lines.features.push({
+            type: "Feature",
+            geometry: {
+              type: "LineString",
+              coordinates: results[key].map((item) => [
+                parseFloat(item[3]),
+                parseFloat(item[4]),
+              ]),
+            },
+            properties: {},
+          });
+        }
+        const trail_buffer = turf.buffer(trail_lines, 50, { units: "meters" });
+        const bbox = turf.bbox(trail_lines);
         map.fitBounds(
           [
             [bbox[0], bbox[1]],
@@ -80,9 +84,9 @@
           ],
           { padding: 20, bearing: 0, duration: 1000 }
         );
-        map.addSource("trail-line-source", {
+        map.addSource("trail-lines-source", {
           type: "geojson",
-          data: trail_line,
+          data: trail_lines,
         });
         map.addSource("trail-buffer-source", {
           type: "geojson",
@@ -93,9 +97,9 @@
           data: trail_points,
         });
         map.addLayer({
-          id: "trail-line-layer",
+          id: "trail-lines-layer",
           type: "line",
-          source: "trail-line-source",
+          source: "trail-lines-source",
           paint: {
             "line-color": "blue",
             "line-width": 4,
@@ -167,38 +171,9 @@
             };
           }),
         };
-        const tracker_line = {
-          type: "FeatureCollection",
-          features: [
-            {
-              type: "Feature",
-              geometry: {
-                type: "LineString",
-                coordinates: results.map((item) => [
-                  parseFloat(item[7]),
-                  parseFloat(item[6]),
-                ]),
-              },
-              properties: {},
-            },
-          ],
-        };
         map.addSource("tracker-inside-points-source", {
           type: "geojson",
           data: tracker_inside_points,
-        });
-        map.addSource("tracker-line-source", {
-          type: "geojson",
-          data: tracker_line,
-        });
-        map.addLayer({
-          id: "tracker-line-layer",
-          type: "line",
-          source: "tracker-line-source",
-          paint: {
-            "line-color": "orange",
-            "line-width": 2,
-          },
         });
         map.addLayer({
           id: "tracker-inside-points-layer",
