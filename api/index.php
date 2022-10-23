@@ -66,6 +66,44 @@ if ($method == 'GET') {
 
 }
 
+function updateTrails()
+{
+    $bufferSize = 50;
+    $geospatial = new GeoSpatial();
+    // get trails
+    $trailRows = csvToArray("data/trail_lines.csv");
+    $trailLines = array();
+    foreach ($trailRows as $row) {
+        $trailLines[$row[1]][] = $row;
+    }
+    // get latest trackers
+    $trackerRows = csvToArray("data/tracker_logs.csv");
+    foreach ($trackerRows as $trackerRow) {
+        // tracker point
+        $trackerPoint = array((float) $trackerRow[7], (float) $trackerRow[6]);
+        foreach ($trailLines as $key => $trailLine) {
+            for ($i = 0; $i < count($trailLine) - 1; $i++) {
+                $pt1 = $trailLine[$i];
+                $pt2 = $trailLine[$i + 1];
+                $dist = $geospatial->distanceToSegment($trackerPoint, $pt1, $pt2, "meters");
+                if ($dist <= $bufferSize) {
+                    $d1 = $geospatial->distance($trackerPoint, $pt1, "meters");
+                    $d2 = $geospatial->distance($trackerPoint, $pt2, "meters");
+                    if ($d1 < $d2) {
+                        $trailId = $trailLine[$i][0];
+                        // please update trail line with id
+                    } else {
+                        $trailId = $trailLine[$i + 1][0];
+                        // please update trail line with id
+                    }
+                    break;
+                }
+            }
+
+        }
+    }
+}
+
 function csvToArray($csvFile)
 {
     $file_to_read = fopen($csvFile, 'r');

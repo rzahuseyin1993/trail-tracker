@@ -13,7 +13,7 @@ class GeoSpatial
         return min($dists);
 
     }
-    private function distanceToSegment($p, $a, $b, $units)
+    public function distanceToSegment($p, $a, $b, $units)
     {
         $v = array($b[0] - $a[0], $b[1] - $a[1]);
         $w = array($p[0] - $a[0], $p[1] - $a[1]);
