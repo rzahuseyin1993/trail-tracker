@@ -83,8 +83,8 @@ function updateTrails()
         $trackerPoint = array((float) $trackerRow[7], (float) $trackerRow[6]);
         foreach ($trailLines as $key => $trailLine) {
             for ($i = 0; $i < count($trailLine) - 1; $i++) {
-                $pt1 = $trailLine[$i];
-                $pt2 = $trailLine[$i + 1];
+                $pt1 = array($trailLine[$i][3], $trailLine[$i][4]);
+                $pt2 = array($trailLine[$i + 1][3], $trailLine[$i + 1][4]);
                 $dist = $geospatial->distanceToSegment($trackerPoint, $pt1, $pt2, "meters");
                 if ($dist <= $bufferSize) {
                     $d1 = $geospatial->distance($trackerPoint, $pt1, "meters");
